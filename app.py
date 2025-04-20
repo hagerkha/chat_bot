@@ -6,7 +6,16 @@ import os
 app = Flask(__name__)
 CORS(app)
 
-client = Client("https://alim9hamed-medical-chatbot.hf.space")
+# تهيئة gradio_client مع دعم مفتاح API (اختياري)
+try:
+    client = Client(
+        "https://alim9hamed-medical-chatbot.hf.space",
+        hf_token=os.environ.get("HUGGINGFACE_API_TOKEN", None)
+    )
+    print("Successfully initialized gradio_client")
+except Exception as e:
+    print(f"Failed to initialize gradio_client: {str(e)}")
+    raise
 
 @app.route('/')
 def home():
@@ -21,10 +30,12 @@ def predict():
         if not question:
             return jsonify({"error": "Missing question"}), 400
 
+        print(f"Received question: {question}")
         result = client.predict(
             question,
             api_name="/predict"
         )
+        print(f"Prediction result: {result}")
 
         return jsonify({"response": result})
 
@@ -33,5 +44,5 @@ def predict():
         return jsonify({"error": str(e)}), 500
 
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 8000))
+    port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
