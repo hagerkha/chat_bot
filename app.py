@@ -1,25 +1,26 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from gradio_client import Client
+import os
 
 app = Flask(__name__)
-CORS(app)  # السماح للطلبات من مصادر خارجية (مثل تطبيق Flutter)
+CORS(app)
 
-# تحميل الـ Client الخاص بـ Hugging Face
-client = Client("alim9hamed/medical_chatbot")
+# استخدام Hugging Face Space
+client = Client("alim9hamed/medical_chatbot", src="spaces")
 
 @app.route('/predict', methods=['POST'])
 def predict():
     try:
-        data = request.get_json()  # استلام البيانات بصيغة JSON
+        data = request.get_json()
         question = data.get("question")
 
         if not question:
             return jsonify({"error": "Missing question"}), 400
 
-        # استدعاء نموذج الـ Chatbot من Hugging Face
+        # استدعاء النموذج من Gradio Space
         result = client.predict(
-            question,  # تعديل طريقة تمرير السؤال
+            question,
             api_name="/predict"
         )
 
@@ -29,4 +30,6 @@ def predict():
         return jsonify({"error": str(e)}), 500
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=8000, debug=True)
+    # استخدام PORT من متغيرات البيئة (علشان Railway يشتغل صح)
+    port = int(os.environ.get("PORT", 8000))
+    app.run(host="0.0.0.0", port=port)
