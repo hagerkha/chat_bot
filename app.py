@@ -6,8 +6,11 @@ import os
 app = Flask(__name__)
 CORS(app)
 
-# فقط اكتب اسم المساحة بدون src=
 client = Client("https://alim9hamed-medical-chatbot.hf.space")
+
+@app.route('/')
+def home():
+    return jsonify({"message": "Server is running"})
 
 @app.route('/predict', methods=['POST'])
 def predict():
@@ -26,6 +29,7 @@ def predict():
         return jsonify({"response": result})
 
     except Exception as e:
+        print(f"Error in predict: {str(e)}")
         return jsonify({"error": str(e)}), 500
 
 if __name__ == "__main__":
